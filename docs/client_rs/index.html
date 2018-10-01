@@ -59,7 +59,7 @@
                    <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                        [<span class='inner'>&#x2212;</span>]
                    </a>
-               </span><a class='srclink' href='../src/client_rs/main.rs.html#1-297' title='goto source code'>[src]</a></span></h1><div class='docblock'><p>Client to submit a vote.
+               </span><a class='srclink' href='../src/client_rs/main.rs.html#1-460' title='goto source code'>[src]</a></span></h1><div class='docblock'><p>Client to submit a vote.
 Requires a public_key.json, a private_uciv.json and a public_uciv.json in the project root.
 These can be generated using <a href="https://github.com/provotum/generator-rs">generator-rs</a>.</p>
 <pre><code class="language-sh">USAGE:
@@ -70,6 +70,7 @@ FLAGS:
     -V, --version    Prints version information
 
 SUBCOMMANDS:
+    admin          Administrate vote
     help           Prints this message or the help of the given subcommand(s)
     submit-vote    Submit a vote to the blockchain
 </code></pre>
@@ -96,6 +97,20 @@ must follow the format of <code>&lt;IPv4&gt;:&lt;Port&gt;</code>, e.g. <code>127
 </ol>
 <p>Substituting these values, an invocation could look as follows:</p>
 <pre><code class="language-sh"> client_rs submit-vote yes 1 127.0.0.1:3000
+</code></pre>
+<h2 id="administrate-a-vote" class="section-header"><a href="#administrate-a-vote">Administrate a Vote</a></h2>
+<p>Open or close the voting procedure on the blockchain.</p>
+<pre><code class="language-sh"> client_rs admin [open | close] [peer_address]
+</code></pre>
+<ol>
+<li>The first argument is the status of the voting procedure to which it should be changed.
+This can be either <code>open</code> to allow the blockchain to accept incoming vote transactions,
+or <code>close</code> to stop the nodes from accepting vote transactions.</li>
+<li>Third, the address of a running blockchain node has to be provided. Such an address
+must follow the format of <code>&lt;IPv4&gt;:&lt;Port&gt;</code>, e.g. <code>127.0.0.1:3000</code>.</li>
+</ol>
+<p>Substituting these values, an invocation could look as follows:</p>
+<pre><code class="language-sh">  client_rs admin open 127.0.0.1:3000
 </code></pre>
 <h1 id="panics" class="section-header"><a href="#panics">Panics</a></h1>
 <p>Panics, if the following files are missing from the binary root:</p>

@@ -41,6 +41,27 @@ Substituting these values, an invocation could look as follows:
 ```sh
  client_rs submit-vote yes 1 127.0.0.1:3000
 ```
+
+### Administrate a Vote
+Open or close the voting procedure on the blockchain.
+
+```sh
+ client_rs admin [open | close] [peer_address]
+```
+
+1. The first argument is the status of the voting procedure to which it should be changed.
+   This can be either `open` to allow the blockchain to accept incoming vote transactions,
+   or `close` to stop the nodes from accepting vote transactions.
+2. Third, the address of a running blockchain node has to be provided. Such an address
+   must follow the format of `<IPv4>:<Port>`, e.g. `127.0.0.1:3000`.
+
+Substituting these values, an invocation could look as follows:
+
+```sh
+  client_rs admin open 127.0.0.1:3000
+```
+
+
 ### Panics
 Panics, if the following files are missing from the binary root:
 * `public_key.json`

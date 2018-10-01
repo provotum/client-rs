@@ -11,6 +11,7 @@
 //!     -V, --version    Prints version information
 //!
 //! SUBCOMMANDS:
+//!     admin          Administrate vote
 //!     help           Prints this message or the help of the given subcommand(s)
 //!     submit-vote    Submit a vote to the blockchain
 //! ```
@@ -46,6 +47,25 @@
 //!  client_rs submit-vote yes 1 127.0.0.1:3000
 //! ```
 //!
+//! ## Administrate a Vote
+//!
+//! Open or close the voting procedure on the blockchain.
+//!
+//! ```sh
+//!  client_rs admin [open | close] [peer_address]
+//! ```
+//!
+//! 1. The first argument is the status of the voting procedure to which it should be changed.
+//!    This can be either `open` to allow the blockchain to accept incoming vote transactions,
+//!    or `close` to stop the nodes from accepting vote transactions.
+//! 2. Third, the address of a running blockchain node has to be provided. Such an address
+//!    must follow the format of `<IPv4>:<Port>`, e.g. `127.0.0.1:3000`.
+//!
+//! Substituting these values, an invocation could look as follows:
+//!
+//! ```sh
+//!   client_rs admin open 127.0.0.1:3000
+//! ```
 //!
 //! # Panics
 //!
@@ -92,7 +112,7 @@ fn main() {
         .init();
 
     let matches = App::new("client_rs")
-        .version("0.1.0")
+        .version("0.2.0")
         .author("Raphael Matile <raphael.matile@gmail.com>")
         .about("Client to submit a vote. Requires a public_key.json, a private_uciv.json and a public_uciv.json in the project root")
         .subcommand(
@@ -115,6 +135,23 @@ fn main() {
                     .required(true)
                     .takes_value(true)
                     .index(3)
+                    .help("The peer address to which the transaction should be sent. In the form <IPv4>:<Port> ")
+                )
+        )
+        .subcommand(
+            SubCommand::with_name("admin")
+                .about("Administrate vote")
+                .arg(Arg::with_name("change_status")
+                    .required(true)
+                    .takes_value(true)
+                    .possible_values(&["open", "close"])
+                    .index(1)
+                    .help("Open or close a vote")
+                )
+                .arg(Arg::with_name("peer_address")
+                    .required(true)
+                    .takes_value(true)
+                    .index(2)
                     .help("The peer address to which the transaction should be sent. In the form <IPv4>:<Port> ")
                 )
         )
@@ -149,6 +186,15 @@ fn main() {
 
             info!("Submitting vote to node at {:?}", peer_address.clone());
             submit_vote(voter_index as usize, cipher_text, membership_proof, cai_proof, peer_address);
+        }
+        Some("admin") => {
+            let subcommand_matches = matches.subcommand_matches("admin").unwrap();
+
+            let status: &str = subcommand_matches.value_of("change_status").unwrap();
+            let peer_address: SocketAddr = subcommand_matches.value_of("peer_address").unwrap().parse::<SocketAddr>().unwrap();
+
+            info!("Submitting vote status-change {:?} to {:?}", status, peer_address.clone());
+            submit_status_change(status, peer_address);
         }
         Some(&_) | None => {
             // an unspecified or no command was used
@@ -322,6 +368,89 @@ fn submit_vote(voter_idx: usize, cipher_text: CipherText, membership_proof: Memb
                 info!("Successfully submitted vote to blockchain");
             } else {
                 warn!("Your vote may not have been accepted. Please try again.");
+            }
+        }
+        Err(e) => {
+            warn!("Failed to connect due to {:?}", e);
+        }
+    }
+}
+
+fn submit_status_change(status: &str, peer_addr: SocketAddr) {
+    let stream = TcpStream::connect(peer_addr);
+
+    match stream {
+        Ok(mut stream) => {
+            trace!("Successfully connected to {:?}", stream.peer_addr());
+
+            let status_message;
+            match status {
+                "open" => {
+                    status_message = Message::OpenVote;
+                },
+                "close" => {
+                    status_message = Message::CloseVote;
+                },
+                &_ => {
+                    panic!("Invalid status. Must be one of ['open', 'close']")
+                }
+            }
+
+            trace!("Encoding message...");
+            let request = JsonCodec::encode(status_message);
+            trace!("Encoded message");
+
+            // no multiplexing available here, so we need to close
+            // the write portion of the stream before we can read from it again.
+            stream.write_all(&request.into_bytes()).unwrap();
+            stream.flush().unwrap();
+            let shutdown_result = stream.shutdown(Shutdown::Write);
+            match shutdown_result {
+                Ok(()) => {}
+                Err(e) => {
+                    trace!("Could not shutdown outgoing write connection: {:?}", e);
+
+                    return;
+                }
+            }
+
+            trace!("Flushed transaction");
+
+            // wait for some incoming data on the same stream
+            let mut buffer_str = String::new();
+            let read_result = stream.try_clone().unwrap().read_to_string(&mut buffer_str);
+
+            match read_result {
+                Ok(amount_bytes_received) => {
+                    trace!("Read {:?} bytes from outgoing connection", amount_bytes_received);
+
+                    if 0 == amount_bytes_received {
+                        trace!("No bytes received on outgoing connection. Dropping connection without response");
+                        let shutdown_result = stream.shutdown(Shutdown::Both);
+                        match shutdown_result {
+                            Ok(()) => {}
+                            Err(e) => {
+                                trace!("Failed to shutdown incoming connection: {:?}", e);
+                            }
+                        }
+
+                        return;
+                    }
+                }
+                Err(e) => {
+                    trace!("Failed to read bytes from incoming connection: {:?}", e);
+
+                    return;
+                }
+            }
+
+            let response = JsonCodec::decode(buffer_str);
+            trace!("Got response from outgoing stream: {:?}", response);
+
+            if response == Message::OpenVoteAccept || response == Message::CloseVoteAccept {
+                info!("Successfully submitted status to blockchain");
+            } else {
+                warn!("Your status change may not have been accepted. Please try again.");
             }
         }
         Err(e) => {
