@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="generator" content="rustdoc">
+    <meta name="description" content="API documentation for the Rust `client_rs` crate.">
+    <meta name="keywords" content="rust, rustlang, rust-lang, client_rs">
+
+    <title>client_rs - Rust</title>
+
+    <link rel="stylesheet" type="text/css" href="../normalize.css">
+    <link rel="stylesheet" type="text/css" href="../rustdoc.css"
+          id="mainThemeStyle">
+    
+    <link rel="stylesheet" type="text/css" href="../dark.css">
+    <link rel="stylesheet" type="text/css" href="../light.css" id="themeStyle">
+    <script src="../storage.js"></script>
+    
+
+    
+    
+</head>
+<body class="rustdoc mod">
+    <!--[if lte IE 8]>
+    <div class="warning">
+        This old browser is unsupported and will most likely display funky
+        things.
+    </div>
+    <![endif]-->
+
+    
+
+    <nav class="sidebar">
+        <div class="sidebar-menu">&#9776;</div>
+        
+        <p class='location'>Crate client_rs</p><div class="sidebar-elems"><p class='location'></p><script>window.sidebarCurrent = {name: 'client_rs', ty: 'mod', relpath: '../'};</script></div>
+    </nav>
+
+    <div class="theme-picker">
+        <button id="theme-picker" aria-label="Pick another theme!">
+            <img src="../brush.svg" width="18" alt="Pick another theme!">
+        </button>
+        <div id="theme-choices"></div>
+    </div>
+    <script src="../theme.js"></script>
+    <nav class="sub">
+        <form class="search-form js-only">
+            <div class="search-container">
+                <input class="search-input" name="search"
+                       autocomplete="off"
+                       placeholder="Click or press ‘S’ to search, ‘?’ for more options…"
+                       type="search">
+            </div>
+        </form>
+    </nav>
+
+    <section id='main' class="content"><h1 class='fqn'><span class='in-band'>Crate <a class="mod" href=''>client_rs</a></span><span class='out-of-band'><span id='render-detail'>
+                   <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
+                       [<span class='inner'>&#x2212;</span>]
+                   </a>
+               </span><a class='srclink' href='../src/client_rs/main.rs.html#1-297' title='goto source code'>[src]</a></span></h1><div class='docblock'><p>Client to submit a vote.
+Requires a public_key.json, a private_uciv.json and a public_uciv.json in the project root.
+These can be generated using <a href="https://github.com/provotum/generator-rs">generator-rs</a>.</p>
+<pre><code class="language-sh">USAGE:
+    client [SUBCOMMAND]
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+
+SUBCOMMANDS:
+    help           Prints this message or the help of the given subcommand(s)
+    submit-vote    Submit a vote to the blockchain
+</code></pre>
+<h1 id="example" class="section-header"><a href="#example">Example</a></h1><h2 id="submitting-a-vote" class="section-header"><a href="#submitting-a-vote">Submitting a vote</a></h2>
+<p>In order to submit a vote to the blockchain, some prerequisites must be met:</p>
+<ul>
+<li>The voting authorities must have created and published a public key by which votes are encrypted.
+This public key must be present in the same directory as this binary and called <code>public_key.json</code>.</li>
+<li>A registrar must have created universal cast-as-intended verifiability (UCIV) information which
+is tight to a specific voter and voting option. This information must be contained in the
+files <code>private_uciv.json</code> and <code>public_uciv.json</code> in the binary's directory.</li>
+</ul>
+<p>Then, you can vote by using the following  command:</p>
+<pre><code class="language-sh"> client_rs submit-vote [yes | no] [voter_idx] [peer_address]
+</code></pre>
+<ol>
+<li>The first argument of the <code>submit-vote</code> sub-command is the chosen vote. As of now, these
+are only binary, i.e. yes or no.</li>
+<li>The second argument is called <code>voter_idx</code> and reflects the index of the voter within
+the public and private UCIV. This is required in order to create a valid Cast-as-Intended
+proof.</li>
+<li>Third, the address of a running blockchain node has to be provided. Such an address
+must follow the format of <code>&lt;IPv4&gt;:&lt;Port&gt;</code>, e.g. <code>127.0.0.1:3000</code>.</li>
+</ol>
+<p>Substituting these values, an invocation could look as follows:</p>
+<pre><code class="language-sh"> client_rs submit-vote yes 1 127.0.0.1:3000
+</code></pre>
+<h1 id="panics" class="section-header"><a href="#panics">Panics</a></h1>
+<p>Panics, if the following files are missing from the binary root:</p>
+<ul>
+<li>public_key.json</li>
+<li>private_uciv.json</li>
+<li>public_uciv.json</li>
+</ul>
+</div></section>
+    <section id='search' class="content hidden"></section>
+
+    <section class="footer"></section>
+
+    <aside id="help" class="hidden">
+        <div>
+            <h1 class="hidden">Help</h1>
+
+            <div class="shortcuts">
+                <h2>Keyboard Shortcuts</h2>
+
+                <dl>
+                    <dt><kbd>?</kbd></dt>
+                    <dd>Show this help dialog</dd>
+                    <dt><kbd>S</kbd></dt>
+                    <dd>Focus the search field</dd>
+                    <dt><kbd>↑</kbd></dt>
+                    <dd>Move up in search results</dd>
+                    <dt><kbd>↓</kbd></dt>
+                    <dd>Move down in search results</dd>
+                    <dt><kbd>↹</kbd></dt>
+                    <dd>Switch tab</dd>
+                    <dt><kbd>&#9166;</kbd></dt>
+                    <dd>Go to active search result</dd>
+                    <dt><kbd>+</kbd></dt>
+                    <dd>Expand all sections</dd>
+                    <dt><kbd>-</kbd></dt>
+                    <dd>Collapse all sections</dd>
+                </dl>
+            </div>
+
+            <div class="infos">
+                <h2>Search Tricks</h2>
+
+                <p>
+                    Prefix searches with a type followed by a colon (e.g.
+                    <code>fn:</code>) to restrict the search to a given type.
+                </p>
+
+                <p>
+                    Accepted types are: <code>fn</code>, <code>mod</code>,
+                    <code>struct</code>, <code>enum</code>,
+                    <code>trait</code>, <code>type</code>, <code>macro</code>,
+                    and <code>const</code>.
+                </p>
+
+                <p>
+                    Search functions by type signature (e.g.
+                    <code>vec -> usize</code> or <code>* -> vec</code>)
+                </p>
+            </div>
+        </div>
+    </aside>
+
+    
+
+    <script>
+        window.rootPath = "../";
+        window.currentCrate = "client_rs";
+    </script>
+    <script src="../main.js"></script>
+    <script defer src="../search-index.js"></script>
+</body>
+</html>
