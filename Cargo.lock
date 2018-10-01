@@ -103,7 +103,7 @@ name = "client"
 version = "0.1.0"
 dependencies = [
  "clap 2.32.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "crypto-rs 0.1.1 (git+https://github.com/provotum/crypto-rs.git)",
+ "crypto-rs 0.1.1 (git+https://github.com/provotum/crypto-rs)",
  "env_logger 0.5.13 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.4.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "node 0.1.0 (git+https://github.com/provotum/node)",
@@ -152,7 +152,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 [[package]]
 name = "crypto-rs"
 version = "0.1.1"
-source = "git+https://github.com/provotum/crypto-rs.git#45840a2f75edbe4a29ffdb5918608c715283ce0e"
+source = "git+https://github.com/provotum/crypto-rs#5977ebd7d882c49d06fa5efbc0e7b98617269a55"
 dependencies = [
  "num 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "rand 0.5.5 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -353,11 +353,11 @@ dependencies = [
 [[package]]
 name = "node"
 version = "0.1.0"
-source = "git+https://github.com/provotum/node#4b1c7834d96af75e92256c6c97da33c66b9140b9"
+source = "git+https://github.com/provotum/node#588b1dfd239c9cd2168e1728b3d72292ae08f850"
 dependencies = [
  "bincode 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "bytes 0.4.9 (registry+https://github.com/rust-lang/crates.io-index)",
- "crypto-rs 0.1.1 (git+https://github.com/provotum/crypto-rs.git)",
+ "crypto-rs 0.1.1 (git+https://github.com/provotum/crypto-rs)",
  "env_logger 0.5.13 (registry+https://github.com/rust-lang/crates.io-index)",
  "futures 0.1.23 (registry+https://github.com/rust-lang/crates.io-index)",
  "getopts 0.2.18 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1024,7 +1024,7 @@ dependencies = [
 "checksum crossbeam-deque 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)" = "3486aefc4c0487b9cb52372c97df0a48b8c249514af1ee99703bf70d2f2ceda1"
 "checksum crossbeam-epoch 0.5.2 (registry+https://github.com/rust-lang/crates.io-index)" = "30fecfcac6abfef8771151f8be4abc9e4edc112c2bcb233314cafde2680536e9"
 "checksum crossbeam-utils 0.5.0 (registry+https://github.com/rust-lang/crates.io-index)" = "677d453a17e8bd2b913fa38e8b9cf04bcdbb5be790aa294f2389661d72036015"
-"checksum crypto-rs 0.1.1 (git+https://github.com/provotum/crypto-rs.git)" = "<none>"
+"checksum crypto-rs 0.1.1 (git+https://github.com/provotum/crypto-rs)" = "<none>"
 "checksum digest 0.7.6 (registry+https://github.com/rust-lang/crates.io-index)" = "03b072242a8cbaf9c145665af9d250c59af3b958f83ed6824e13533cf76d5b90"
 "checksum env_logger 0.5.13 (registry+https://github.com/rust-lang/crates.io-index)" = "15b0a4d2e39f8420210be8b27eeda28029729e2fd4291019455016c348240c38"
 "checksum fake-simd 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)" = "e88a8acf291dafb59c2d96e8f59828f3838bb1a70398823ade51a84de6a6deed"

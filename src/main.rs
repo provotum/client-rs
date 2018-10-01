@@ -91,8 +91,14 @@ fn main() {
 
             info!("Verifying membership proof");
             assert!(membership_proof.clone().verify(pub_key.clone(), cipher_text.clone(), voting_options.clone()));
+            info!("Membership proof is valid");
             info!("Verifying cast-as-intended proof");
             assert!(cai_proof.clone().verify(pub_key.clone(), cipher_text.clone(), uciv.1.get(voter_index as usize).unwrap().clone(), voting_options.clone()));
+            info!("Cast-as-intended proof is valid");
+
+            info!("Submitting vote to node at {:?}", peer_address.clone());
+            submit_vote(voter_index as usize, cipher_text, membership_proof, cai_proof, peer_address);
+
 
         },
         Some(&_) | None => {
@@ -172,9 +178,7 @@ fn read_uciv_info() -> (Vec<PreImageSet>, Vec<ImageSet>) {
     (private_uciv, public_uciv)
 }
 
-fn submit_vote() {
-    let peer_addr: SocketAddr = "127.0.0.1:3001".parse().unwrap();
-
+fn submit_vote(voter_idx: usize, cipher_text: CipherText, membership_proof: MembershipProof, cai_proof: CaiProof, peer_addr: SocketAddr) {
     let stream = TcpStream::connect(peer_addr);
 
     match stream {
@@ -182,10 +186,15 @@ fn submit_vote() {
             trace!("Successfully connected to {:?}", stream.peer_addr());
 
             let trx = Transaction {
-                from: "hello".to_string()
+                voter_idx,
+                cipher_text,
+                membership_proof,
+                cai_proof
             };
 
+            trace!("Encoding transaction...");
             let request = JsonCodec::encode(Message::TransactionPayload(trx));
+            trace!("Encoded transaction");
 
             stream.write_all(&request.into_bytes()).unwrap();
             stream.flush().unwrap();
@@ -199,7 +208,7 @@ fn submit_vote() {
                 }
             }
 
-            trace!("flushed written data");
+            trace!("Flushed transaction");
 
             // wait for some incoming data on the same stream
             let mut buffer_str = String::new();
