@@ -80,7 +80,7 @@ extern crate crypto_rs;
 extern crate env_logger;
 #[macro_use]
 extern crate log;
-extern crate node;
+extern crate node_rs;
 extern crate num;
 extern crate pretty_env_logger;
 extern crate serde_json;
@@ -90,11 +90,11 @@ use crypto_rs::arithmetic::mod_int::From;
 use crypto_rs::arithmetic::mod_int::ModInt;
 use crypto_rs::cai::uciv::{CaiProof, ImageSet, PreImageSet};
 use crypto_rs::el_gamal::ciphertext::CipherText;
-use crypto_rs::el_gamal::encryption::{encrypt, PublicKey};
+use crypto_rs::el_gamal::encryption::{encrypt, decrypt, PublicKey, PrivateKey};
 use crypto_rs::el_gamal::membership_proof::MembershipProof;
 use env_logger::Target;
-use node::chain::transaction::Transaction;
-use node::p2p::codec::{Codec, JsonCodec, Message};
+use node_rs::chain::transaction::Transaction;
+use node_rs::p2p::codec::{Codec, JsonCodec, Message};
 use num::{One, Zero};
 use num::BigInt;
 use std::fs::File;
@@ -155,6 +155,16 @@ fn main() {
                     .help("The peer address to which the transaction should be sent. In the form <IPv4>:<Port> ")
                 )
         )
+        .subcommand(
+            SubCommand::with_name("count-votes")
+                .about("Let the final tally be counted and returned.")
+                .arg(Arg::with_name("peer_address")
+                    .required(true)
+                    .takes_value(true)
+                    .index(1)
+                    .help("The peer address to which the request should be sent. In the form <IPv4>:<Port> ")
+                )
+        )
         .get_matches();
 
     let voting_options: Vec<ModInt> = vec![
@@ -196,6 +206,14 @@ fn main() {
             info!("Submitting vote status-change {:?} to {:?}", status, peer_address.clone());
             submit_status_change(status, peer_address);
         }
+        Some("count-votes") => {
+            let subcommand_matches = matches.subcommand_matches("count-votes").unwrap();
+
+            let peer_address: SocketAddr = subcommand_matches.value_of("peer_address").unwrap().parse::<SocketAddr>().unwrap();
+            let private_key: PrivateKey = read_private_key();
+
+            request_final_tally(private_key, peer_address);
+        }
         Some(&_) | None => {
             // an unspecified or no command was used
             println!("{}", matches.usage())
@@ -212,6 +230,17 @@ fn read_public_key() -> PublicKey {
 
     trace!("Reading public key from public_key.json");
     PublicKey::new("public_key.json")
+}
+
+fn read_private_key() -> PrivateKey {
+    let path = Path::new("./private_key.json");
+    if ! path.exists() {
+        error!("Missing public key file at ./private_key.json");
+        panic!();
+    }
+
+    trace!("Reading public key from private_key.json");
+    PrivateKey::new("private_key.json")
 }
 
 fn transform_vote(vote: &str, pub_key: PublicKey) -> ModInt {
@@ -452,6 +481,84 @@ fn submit_status_change(status: &str, peer_addr: SocketAddr) {
             } else {
                 warn!("Your status change may not have been accepted. Please try again.");
             }
+        }
+        Err(e) => {
+            warn!("Failed to connect due to {:?}", e);
+        }
+    }
+}
+
+
+fn request_final_tally(private_key: PrivateKey, peer_addr: SocketAddr) {
+    let stream = TcpStream::connect(peer_addr);
+
+    match stream {
+        Ok(mut stream) => {
+            trace!("Successfully connected to {:?}", stream.peer_addr());
+
+            trace!("Encoding message...");
+            let request = JsonCodec::encode(Message::RequestTally);
+            trace!("Encoded message");
+
+            // no multiplexing available here, so we need to close
+            // the write portion of the stream before we can read from it again.
+            stream.write_all(&request.into_bytes()).unwrap();
+            stream.flush().unwrap();
+            let shutdown_result = stream.shutdown(Shutdown::Write);
+            match shutdown_result {
+                Ok(()) => {}
+                Err(e) => {
+                    trace!("Could not shutdown outgoing write connection: {:?}", e);
+
+                    return;
+                }
+            }
+
+            trace!("Flushed transaction");
+
+            // wait for some incoming data on the same stream
+            let mut buffer_str = String::new();
+            let read_result = stream.try_clone().unwrap().read_to_string(&mut buffer_str);
+
+            match read_result {
+                Ok(amount_bytes_received) => {
+                    trace!("Read {:?} bytes from outgoing connection", amount_bytes_received);
+
+                    if 0 == amount_bytes_received {
+                        trace!("No bytes received on outgoing connection. Dropping connection without response");
+                        let shutdown_result = stream.shutdown(Shutdown::Both);
+                        match shutdown_result {
+                            Ok(()) => {}
+                            Err(e) => {
+                                trace!("Failed to shutdown incoming connection: {:?}", e);
+                            }
+                        }
+
+                        return;
+                    }
+                }
+                Err(e) => {
+                    trace!("Failed to read bytes from incoming connection: {:?}", e);
+
+                    return;
+                }
+            }
+
+            let response = JsonCodec::decode(buffer_str);
+            trace!("Got response from outgoing stream: {:?}", response);
+
+            match response {
+                Message::RequestTallyPayload(voting_info) => {
+                    let total = ModInt::from_value(BigInt::from(voting_info.total_votes));
+                    let total_supportive : ModInt = decrypt(private_key, voting_info.cipher_text);
+
+                    info!("Final tally is {:?} supporting vs. {:?} opposing of a total of {:?}", total_supportive.clone(), total.clone() - total_supportive.clone(), total.clone());
+                },
+                _ => {
+                    warn!("Could probably not fetch final tally. Try again");
+                }
+            }
+
         }
         Err(e) => {
             warn!("Failed to connect due to {:?}", e);

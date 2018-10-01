@@ -11,6 +11,6 @@ num = "0.2.0"
 serde = "1.0"
 serde_derive = "1.0"
 serde_json = "1.0"
-node = { git = "https://github.com/provotum/node", branch = "master"}
+node_rs = { git = "https://github.com/provotum/node-rs", branch = "master"}
 crypto-rs = { git = "https://github.com/provotum/crypto-rs", branch = "master"}
 clap = "2.26.0"
