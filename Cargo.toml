@@ -1,5 +1,5 @@
 [package]
-name = "client"
+name = "client_rs"
 version = "0.1.0"
 authors = ["Raphael Matile <raphael.matile@gmail.com>"]
 

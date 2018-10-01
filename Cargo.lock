@@ -99,7 +99,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "client"
+name = "client_rs"
 version = "0.1.0"
 dependencies = [
  "clap 2.32.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -353,7 +353,7 @@ dependencies = [
 [[package]]
 name = "node"
 version = "0.1.0"
-source = "git+https://github.com/provotum/node#588b1dfd239c9cd2168e1728b3d72292ae08f850"
+source = "git+https://github.com/provotum/node#29a0815f2898ae0bb74466cbb5c6cdea4b2c2236"
 dependencies = [
  "bincode 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "bytes 0.4.9 (registry+https://github.com/rust-lang/crates.io-index)",
