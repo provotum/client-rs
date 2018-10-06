@@ -345,7 +345,7 @@ dependencies = [
 [[package]]
 name = "node_rs"
 version = "0.1.0"
-source = "git+https://github.com/provotum/node-rs#055b28ba496c6a814f619fb696072f319ab5aebe"
+source = "git+https://github.com/provotum/node-rs#533d6033ae42c9618bc0fdaee1a1582ce1492cbb"
 dependencies = [
  "bincode 1.0.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "bytes 0.4.9 (registry+https://github.com/rust-lang/crates.io-index)",
