@@ -59,11 +59,16 @@
                    <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                        [<span class='inner'>&#x2212;</span>]
                    </a>
-               </span><a class='srclink' href='../src/client_rs/main.rs.html#1-460' title='goto source code'>[src]</a></span></h1><div class='docblock'><p>Client to submit a vote.
-Requires a public_key.json, a private_uciv.json and a public_uciv.json in the project root.
-These can be generated using <a href="https://github.com/provotum/generator-rs">generator-rs</a>.</p>
-<pre><code class="language-sh">USAGE:
-    client [SUBCOMMAND]
+               </span><a class='srclink' href='../src/client_rs/main.rs.html#1-668' title='goto source code'>[src]</a></span></h1><div class='docblock'><p>This client provides an easy way to submit a vote to the blockchain.
+To generate all required cryptographic proofs, it requires a
+<code>public_key.json</code>, a <code>private_uciv.json</code> and a <code>public_uciv.json</code>
+in the same folder as the binary is executed.</p>
+<p>These values can be generated using <a href="https://github.com/provotum/generator-rs">generator-rs</a>.</p>
+<h2 id="usage" class="section-header"><a href="#usage">Usage</a></h2>
+<pre><code class="language-sh">Client to submit a vote. Requires a public_key.json, private_key.json, a private_uciv.json and a public_uciv.json in the project root
+
+USAGE:
+    client_rs [SUBCOMMAND]
 
 FLAGS:
     -h, --help       Prints help information
@@ -71,34 +76,12 @@ FLAGS:
 
 SUBCOMMANDS:
     admin          Administrate vote
+    count-votes    Let the final tally be counted and returned.
+    fetch-chain    Download the chain from the specified node
     help           Prints this message or the help of the given subcommand(s)
     submit-vote    Submit a vote to the blockchain
 </code></pre>
-<h1 id="example" class="section-header"><a href="#example">Example</a></h1><h2 id="submitting-a-vote" class="section-header"><a href="#submitting-a-vote">Submitting a vote</a></h2>
-<p>In order to submit a vote to the blockchain, some prerequisites must be met:</p>
-<ul>
-<li>The voting authorities must have created and published a public key by which votes are encrypted.
-This public key must be present in the same directory as this binary and called <code>public_key.json</code>.</li>
-<li>A registrar must have created universal cast-as-intended verifiability (UCIV) information which
-is tight to a specific voter and voting option. This information must be contained in the
-files <code>private_uciv.json</code> and <code>public_uciv.json</code> in the binary's directory.</li>
-</ul>
-<p>Then, you can vote by using the following  command:</p>
-<pre><code class="language-sh"> client_rs submit-vote [yes | no] [voter_idx] [peer_address]
-</code></pre>
-<ol>
-<li>The first argument of the <code>submit-vote</code> sub-command is the chosen vote. As of now, these
-are only binary, i.e. yes or no.</li>
-<li>The second argument is called <code>voter_idx</code> and reflects the index of the voter within
-the public and private UCIV. This is required in order to create a valid Cast-as-Intended
-proof.</li>
-<li>Third, the address of a running blockchain node has to be provided. Such an address
-must follow the format of <code>&lt;IPv4&gt;:&lt;Port&gt;</code>, e.g. <code>127.0.0.1:3000</code>.</li>
-</ol>
-<p>Substituting these values, an invocation could look as follows:</p>
-<pre><code class="language-sh"> client_rs submit-vote yes 1 127.0.0.1:3000
-</code></pre>
-<h2 id="administrate-a-vote" class="section-header"><a href="#administrate-a-vote">Administrate a Vote</a></h2>
+<h3 id="administrate-a-vote" class="section-header"><a href="#administrate-a-vote">Administrate a Vote</a></h3>
 <p>Open or close the voting procedure on the blockchain.</p>
 <pre><code class="language-sh"> client_rs admin [open | close] [peer_address]
 </code></pre>
@@ -112,12 +95,52 @@ must follow the format of <code>&lt;IPv4&gt;:&lt;Port&gt;</code>, e.g. <code>127
 <p>Substituting these values, an invocation could look as follows:</p>
 <pre><code class="language-sh">  client_rs admin open 127.0.0.1:3000
 </code></pre>
-<h1 id="panics" class="section-header"><a href="#panics">Panics</a></h1>
+<h3 id="submitting-a-vote" class="section-header"><a href="#submitting-a-vote">Submitting a vote</a></h3>
+<p>In order to submit a vote to the blockchain, some prerequisites must be met:</p>
+<ul>
+<li>The voting authorities must have created and published a public key by which votes are encrypted.
+This public key must be present in the same directory as this binary and called <code>public_key.json</code>.</li>
+<li>A registrar must have created universal cast-as-intended verifiability (UCIV) information which
+is tight to a specific voter and voting option. This information must be contained in the
+files <code>private_uciv.json</code> and <code>public_uciv.json</code> in the binary's directory.
+Then, you can vote by using the following  command:</li>
+</ul>
+<pre><code class="language-sh"> client_rs submit-vote [yes | no] [voter_idx] [peer_address]
+</code></pre>
+<ol>
+<li>The first argument of the <code>submit-vote</code> sub-command is the chosen vote. As of now, these
+are only binary, i.e. yes or no.</li>
+<li>The second argument is called <code>voter_idx</code> and reflects the index of the voter within
+the public and private UCIV. This is required in order to create a valid Cast-as-Intended
+proof.</li>
+<li>Third, the address of a running blockchain node has to be provided. Such an address
+must follow the format of <code>&lt;IPv4&gt;:&lt;Port&gt;</code>, e.g. <code>127.0.0.1:3000</code>.
+Substituting these values, an invocation could look as follows:</li>
+</ol>
+<pre><code class="language-sh"> client_rs submit-vote yes 1 127.0.0.1:3000
+</code></pre>
+<h3 id="counting-votes" class="section-header"><a href="#counting-votes">Counting Votes</a></h3>
+<p>Counting votes is permitted once the voting is closed. In absence of a <code>CloseVote</code> transaction
+in the blockchain, the count will always return zero.</p>
+<pre><code class="language-sh"> client_rs count-votes [peer_address]
+</code></pre>
+<p>Substituting these values, an invocation could look as follows:</p>
+<pre><code class="language-sh"> client_rs count-votes 127.0.0.1:3000
+</code></pre>
+<h3 id="fetch-a-blockchain" class="section-header"><a href="#fetch-a-blockchain">Fetch a Blockchain</a></h3>
+<p>For debugging reasons it might be worthy to have a copy of the blockchain:</p>
+<pre><code class="language-sh"> client_rs fetch-chain [peer_address]
+</code></pre>
+<p>Substituting these values, an invocation could look as follows:</p>
+<pre><code class="language-sh"> client_rs fetch-chain 127.0.0.1:3000
+</code></pre>
+<h3 id="panics" class="section-header"><a href="#panics">Panics</a></h3>
 <p>Panics, if the following files are missing from the binary root:</p>
 <ul>
-<li>public_key.json</li>
-<li>private_uciv.json</li>
-<li>public_uciv.json</li>
+<li><code>public_key.json</code></li>
+<li><code>private_key.json</code></li>
+<li><code>private_uciv.json</code></li>
+<li><code>public_uciv.json</code></li>
 </ul>
 </div></section>
     <section id='search' class="content hidden"></section>
