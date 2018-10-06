@@ -9,14 +9,40 @@ These values can be generated using [generator-rs](https://github.com/provotum/g
 
 ## Usage
 ```sh
+Client to submit a vote. Requires a public_key.json, private_key.json, a private_uciv.json and a public_uciv.json in the project root
+
 USAGE:
-    client [SUBCOMMAND]
+    client_rs [SUBCOMMAND]
+
 FLAGS:
     -h, --help       Prints help information
     -V, --version    Prints version information
+
 SUBCOMMANDS:
+    admin          Administrate vote
+    count-votes    Let the final tally be counted and returned.
+    fetch-chain    Download the chain from the specified node
     help           Prints this message or the help of the given subcommand(s)
     submit-vote    Submit a vote to the blockchain
+```
+
+### Administrate a Vote
+Open or close the voting procedure on the blockchain.
+
+```sh
+ client_rs admin [open | close] [peer_address]
+```
+
+1. The first argument is the status of the voting procedure to which it should be changed.
+   This can be either `open` to allow the blockchain to accept incoming vote transactions,
+   or `close` to stop the nodes from accepting vote transactions.
+2. Third, the address of a running blockchain node has to be provided. Such an address
+   must follow the format of `<IPv4>:<Port>`, e.g. `127.0.0.1:3000`.
+
+Substituting these values, an invocation could look as follows:
+
+```sh
+  client_rs admin open 127.0.0.1:3000
 ```
 
 ### Submitting a vote
@@ -42,29 +68,36 @@ Substituting these values, an invocation could look as follows:
  client_rs submit-vote yes 1 127.0.0.1:3000
 ```
 
-### Administrate a Vote
-Open or close the voting procedure on the blockchain.
+### Counting Votes
+Counting votes is permitted once the voting is closed. In absence of a `CloseVote` transaction
+in the blockchain, the count will always return zero.
 
 ```sh
- client_rs admin [open | close] [peer_address]
+ client_rs count-votes [peer_address]
 ```
-
-1. The first argument is the status of the voting procedure to which it should be changed.
-   This can be either `open` to allow the blockchain to accept incoming vote transactions,
-   or `close` to stop the nodes from accepting vote transactions.
-2. Third, the address of a running blockchain node has to be provided. Such an address
-   must follow the format of `<IPv4>:<Port>`, e.g. `127.0.0.1:3000`.
 
 Substituting these values, an invocation could look as follows:
+```sh
+ client_rs count-votes 127.0.0.1:3000
+```
+
+### Fetch a Blockchain
+For debugging reasons it might be worthy to have a copy of the blockchain:
 
 ```sh
-  client_rs admin open 127.0.0.1:3000
+ client_rs fetch-chain [peer_address]
 ```
+
+Substituting these values, an invocation could look as follows:
+```sh
+ client_rs fetch-chain 127.0.0.1:3000
+``` 
 
 
 ### Panics
 Panics, if the following files are missing from the binary root:
 * `public_key.json`
+* `private_key.json`
 * `private_uciv.json`
 * `public_uciv.json`
 
