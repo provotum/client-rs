@@ -200,6 +200,22 @@ fn main() {
                     .help("The peer address to which the request should be sent. In the form <IPv4>:<Port> ")
                 )
         )
+        .subcommand(
+            SubCommand::with_name("fetch-transaction")
+                .about("Download a particular transaction from the specified node")
+                .arg(Arg::with_name("transaction_identifier")
+                    .required(true)
+                    .takes_value(true)
+                    .index(1)
+                    .help("The identifier of the transaction to fetch ")
+                )
+                .arg(Arg::with_name("peer_address")
+                    .required(true)
+                    .takes_value(true)
+                    .index(2)
+                    .help("The peer address to which the request should be sent. In the form <IPv4>:<Port> ")
+                )
+        )
         .get_matches();
 
     let voting_options: Vec<ModInt> = vec![
@@ -255,6 +271,14 @@ fn main() {
             let peer_address: SocketAddr = subcommand_matches.value_of("peer_address").unwrap().parse::<SocketAddr>().unwrap();
 
             request_chain(peer_address);
+        }
+        Some("fetch-transaction") => {
+            let subcommand_matches = matches.subcommand_matches("fetch-transaction").unwrap();
+
+            let trx_id: String = subcommand_matches.value_of("transaction_identifier").unwrap().parse::<String>().unwrap();
+            let peer_address: SocketAddr = subcommand_matches.value_of("peer_address").unwrap().parse::<SocketAddr>().unwrap();
+
+            request_transaction(trx_id, peer_address);
         }
         Some(&_) | None => {
             // an unspecified or no command was used
@@ -430,10 +454,13 @@ fn submit_vote(voter_idx: usize, cipher_text: CipherText, membership_proof: Memb
             let response = JsonCodec::decode(buffer_str);
             trace!("Got response from outgoing stream: {:?}", response);
 
-            if response == Message::TransactionAccept {
-                info!("Successfully submitted vote to blockchain");
-            } else {
-                warn!("Your vote may not have been accepted. Please try again.");
+            match response {
+                Message::TransactionAccept(identifier) => {
+                    info!("Successfully submitted vote to blockchain as transaction with identifier {:?}", identifier);
+                }
+                _ => {
+                    warn!("Your vote may not have been accepted. Please try again.");
+                }
             }
         }
         Err(e) => {
@@ -612,6 +639,70 @@ fn request_chain(peer_addr: SocketAddr) {
 
             trace!("Encoding message...");
             let request = JsonCodec::encode(Message::ChainRequest);
+            trace!("Encoded message");
+
+            // no multiplexing available here, so we need to close
+            // the write portion of the stream before we can read from it again.
+            stream.write_all(&request.into_bytes()).unwrap();
+            stream.flush().unwrap();
+            let shutdown_result = stream.shutdown(Shutdown::Write);
+            match shutdown_result {
+                Ok(()) => {}
+                Err(e) => {
+                    trace!("Could not shutdown outgoing write connection: {:?}", e);
+
+                    return;
+                }
+            }
+
+            trace!("Flushed transaction");
+
+            // wait for some incoming data on the same stream
+            let mut buffer_str = String::new();
+            let read_result = stream.try_clone().unwrap().read_to_string(&mut buffer_str);
+
+            match read_result {
+                Ok(amount_bytes_received) => {
+                    trace!("Read {:?} bytes from outgoing connection", amount_bytes_received);
+
+                    if 0 == amount_bytes_received {
+                        trace!("No bytes received on outgoing connection. Dropping connection without response");
+                        let shutdown_result = stream.shutdown(Shutdown::Both);
+                        match shutdown_result {
+                            Ok(()) => {}
+                            Err(e) => {
+                                trace!("Failed to shutdown incoming connection: {:?}", e);
+                            }
+                        }
+
+                        return;
+                    }
+                }
+                Err(e) => {
+                    trace!("Failed to read bytes from incoming connection: {:?}", e);
+
+                    return;
+                }
+            }
+
+            let response = JsonCodec::decode(buffer_str);
+            trace!("Got response from outgoing stream: {:?}", response);
+        }
+        Err(e) => {
+            warn!("Failed to connect due to {:?}", e);
+        }
+    }
+}
+
+fn request_transaction(transaction_identifier: String, peer_addr: SocketAddr) {
+    let stream = TcpStream::connect(peer_addr);
+
+    match stream {
+        Ok(mut stream) => {
+            trace!("Successfully connected to {:?}", stream.peer_addr());
+
+            trace!("Encoding message...");
+            let request = JsonCodec::encode(Message::FindTransaction(transaction_identifier));
             trace!("Encoded message");
 
             // no multiplexing available here, so we need to close
