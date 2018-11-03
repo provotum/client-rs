@@ -7,7 +7,8 @@
 //!
 //! ## Usage
 //! ```sh
-//! Client to submit a vote. Requires a public_key.json, private_key.json, a private_uciv.json and a public_uciv.json in the project root
+//! Client to submit a vote. Requires a public_key.json, private_key.json, a private_uciv.json and a public_uciv.json in the
+//! project root
 //!
 //! USAGE:
 //!     client_rs [SUBCOMMAND]
@@ -17,11 +18,12 @@
 //!     -V, --version    Prints version information
 //!
 //! SUBCOMMANDS:
-//!     admin          Administrate vote
-//!     count-votes    Let the final tally be counted and returned.
-//!     fetch-chain    Download the chain from the specified node
-//!     help           Prints this message or the help of the given subcommand(s)
-//!     submit-vote    Submit a vote to the blockchain
+//!     admin                Administrate vote
+//!     count-votes          Let the final tally be counted and returned.
+//!     fetch-chain          Download the chain from the specified node
+//!     fetch-transaction    Download a particular transaction from the specified node
+//!     help                 Prints this message or the help of the given subcommand(s)
+//!     submit-vote          Submit a vote to the blockchain
 //! ```
 //!
 //! ### Administrate a Vote
@@ -91,6 +93,12 @@
 //!  client_rs fetch-chain 127.0.0.1:3000
 //! ```
 //!
+//! ### Fetch a Transaction
+//! If you want to fetch a particular transaction from a node, run the following:
+//!
+//! ```sh
+//!   client_rs fetch-transaction [transaction identifier] [peer_address]
+//! ```
 //!
 //! ### Panics
 //! Panics, if the following files are missing from the binary root:

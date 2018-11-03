@@ -59,13 +59,14 @@
                    <a id="toggle-all-docs" href="javascript:void(0)" title="collapse all docs">
                        [<span class='inner'>&#x2212;</span>]
                    </a>
-               </span><a class='srclink' href='../src/client_rs/main.rs.html#1-668' title='goto source code'>[src]</a></span></h1><div class='docblock'><p>This client provides an easy way to submit a vote to the blockchain.
+               </span><a class='srclink' href='../src/client_rs/main.rs.html#1-767' title='goto source code'>[src]</a></span></h1><div class='docblock'><p>This client provides an easy way to submit a vote to the blockchain.
 To generate all required cryptographic proofs, it requires a
 <code>public_key.json</code>, a <code>private_uciv.json</code> and a <code>public_uciv.json</code>
 in the same folder as the binary is executed.</p>
 <p>These values can be generated using <a href="https://github.com/provotum/generator-rs">generator-rs</a>.</p>
 <h2 id="usage" class="section-header"><a href="#usage">Usage</a></h2>
-<pre><code class="language-sh">Client to submit a vote. Requires a public_key.json, private_key.json, a private_uciv.json and a public_uciv.json in the project root
+<pre><code class="language-sh">Client to submit a vote. Requires a public_key.json, private_key.json, a private_uciv.json and a public_uciv.json in the
+project root
 
 USAGE:
     client_rs [SUBCOMMAND]
@@ -75,11 +76,12 @@ FLAGS:
     -V, --version    Prints version information
 
 SUBCOMMANDS:
-    admin          Administrate vote
-    count-votes    Let the final tally be counted and returned.
-    fetch-chain    Download the chain from the specified node
-    help           Prints this message or the help of the given subcommand(s)
-    submit-vote    Submit a vote to the blockchain
+    admin                Administrate vote
+    count-votes          Let the final tally be counted and returned.
+    fetch-chain          Download the chain from the specified node
+    fetch-transaction    Download a particular transaction from the specified node
+    help                 Prints this message or the help of the given subcommand(s)
+    submit-vote          Submit a vote to the blockchain
 </code></pre>
 <h3 id="administrate-a-vote" class="section-header"><a href="#administrate-a-vote">Administrate a Vote</a></h3>
 <p>Open or close the voting procedure on the blockchain.</p>
@@ -133,6 +135,10 @@ in the blockchain, the count will always return zero.</p>
 </code></pre>
 <p>Substituting these values, an invocation could look as follows:</p>
 <pre><code class="language-sh"> client_rs fetch-chain 127.0.0.1:3000
+</code></pre>
+<h3 id="fetch-a-transaction" class="section-header"><a href="#fetch-a-transaction">Fetch a Transaction</a></h3>
+<p>If you want to fetch a particular transaction from a node, run the following:</p>
+<pre><code class="language-sh">  client_rs fetch-transaction [transaction identifier] [peer_address]
 </code></pre>
 <h3 id="panics" class="section-header"><a href="#panics">Panics</a></h3>
 <p>Panics, if the following files are missing from the binary root:</p>
